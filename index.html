@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 2: Application Layer — Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1e2d45;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --accent4: #f59e0b;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --danger: #ef4444;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top:0; left:0; right:0; z-index:100;
+    background: rgba(10,14,26,0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 20px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  nav::-webkit-scrollbar { display:none; }
+  nav a {
+    white-space: nowrap;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .05em;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid transparent;
+    transition: all .2s;
+  }
+  nav a:hover, nav a.active {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: rgba(0,212,255,.08);
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    text-align:center;
+    padding: 80px 20px 40px;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero-bg {
+    position:absolute; inset:0;
+    background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(124,58,237,.15) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 40% at 80% 80%, rgba(0,212,255,.08) 0%, transparent 60%);
+    pointer-events:none;
+  }
+  .hero-grid {
+    position:absolute; inset:0;
+    background-image: linear-gradient(var(--border) 1px, transparent 1px),
+                      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: .3;
+    pointer-events:none;
+  }
+  .tag {
+    display:inline-block;
+    background: rgba(0,212,255,.1);
+    color: var(--accent);
+    border: 1px solid rgba(0,212,255,.3);
+    padding: 4px 14px; border-radius:20px;
+    font-size:12px; font-weight:700; letter-spacing:.1em;
+    margin-bottom:20px;
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem,6vw,5rem);
+    font-weight:800; line-height:1.1;
+    background: linear-gradient(135deg,#fff 0%,var(--accent) 50%,var(--accent2) 100%);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    margin-bottom: 16px;
+  }
+  .hero p { color:var(--muted); font-size:1.1rem; max-width:600px; margin:0 auto 32px; }
+  .hero-badges { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin-bottom:40px; }
+  .badge {
+    background:var(--surface2);
+    border:1px solid var(--border);
+    padding:6px 16px; border-radius:8px;
+    font-size:13px; font-weight:600; color:var(--text);
+  }
+  .start-btn {
+    background: linear-gradient(135deg,var(--accent2),var(--accent));
+    color:#fff; border:none; padding:14px 36px;
+    border-radius:12px; font-size:15px; font-weight:700;
+    cursor:pointer; transition: transform .2s, box-shadow .2s;
+    text-decoration:none; display:inline-block;
+    box-shadow: 0 0 30px rgba(0,212,255,.3);
+  }
+  .start-btn:hover { transform:translateY(-2px); box-shadow:0 0 50px rgba(0,212,255,.5); }
+
+  /* SECTIONS */
+  .section {
+    max-width:1000px; margin:0 auto;
+    padding: 80px 24px;
+    scroll-margin-top: 60px;
+  }
+  .section-header {
+    display:flex; align-items:center; gap:14px;
+    margin-bottom:40px;
+  }
+  .section-num {
+    width:42px; height:42px; flex-shrink:0;
+    border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-family:'Space Mono',monospace;
+    font-size:14px; font-weight:700;
+    background: linear-gradient(135deg,var(--accent2),var(--accent));
+    color:#fff;
+  }
+  .section h2 {
+    font-size:1.8rem; font-weight:800;
+  }
+  .divider { height:1px; background:var(--border); margin:0 24px; }
+
+  /* CARDS */
+  .card-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; }
+  .card {
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:16px; padding:24px;
+    transition: border-color .2s, transform .2s, box-shadow .2s;
+    position:relative; overflow:hidden;
+  }
+  .card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    background:linear-gradient(90deg,var(--accent2),var(--accent));
+    opacity:0; transition:opacity .2s;
+  }
+  .card:hover { border-color:var(--accent); transform:translateY(-4px); box-shadow:0 12px 40px rgba(0,212,255,.1); }
+  .card:hover::before { opacity:1; }
+  .card-icon { font-size:28px; margin-bottom:12px; }
+  .card h3 { font-size:1rem; font-weight:700; margin-bottom:8px; color:var(--accent); }
+  .card p, .card li { font-size:13.5px; color:#94a3b8; line-height:1.6; }
+  .card ul { padding-left:16px; }
+
+  /* COMPARE TABLE */
+  .compare-table { width:100%; border-collapse:collapse; }
+  .compare-table th {
+    background:var(--surface2); padding:12px 16px;
+    text-align:left; font-size:13px; font-weight:700;
+    color:var(--accent); border-bottom:2px solid var(--border);
+  }
+  .compare-table td {
+    padding:11px 16px; border-bottom:1px solid var(--border);
+    font-size:13.5px; color:#94a3b8;
+  }
+  .compare-table tr:hover td { background:rgba(255,255,255,.02); }
+  .badge-yes { color:var(--accent3); font-weight:700; }
+  .badge-no { color:var(--danger); font-weight:700; }
+
+  /* INTERACTIVE DIAGRAM */
+  .diagram-box {
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:16px; padding:28px;
+    margin:24px 0;
+  }
+  .diagram-box h3 { font-size:1rem; font-weight:700; color:var(--accent); margin-bottom:20px; }
+
+  /* HTTP Flow Simulator */
+  .flow-simulator {
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:16px; padding:28px;
+    margin:24px 0;
+  }
+  .flow-sim-title { font-size:1rem; font-weight:700; color:var(--accent); margin-bottom:20px; }
+  .flow-actors {
+    display:flex; justify-content:space-between; align-items:flex-start;
+    gap:24px; position:relative; min-height:280px;
+  }
+  .flow-actor {
+    width:100px; text-align:center; flex-shrink:0;
+  }
+  .actor-box {
+    background:var(--surface2);
+    border:2px solid var(--border);
+    border-radius:12px; padding:12px 8px;
+    font-size:12px; font-weight:700;
+    transition:border-color .3s, box-shadow .3s;
+  }
+  .actor-box.highlight { border-color:var(--accent); box-shadow:0 0 20px rgba(0,212,255,.3); }
+  .actor-icon { font-size:24px; display:block; margin-bottom:6px; }
+  .flow-timeline {
+    flex:1; position:relative; overflow:hidden;
+    min-height:250px;
+  }
+  .flow-steps { list-style:none; }
+  .flow-step {
+    display:flex; align-items:center; gap:10px;
+    padding:8px 0; opacity:.3;
+    transition:opacity .4s, transform .4s;
+    transform:translateX(20px);
+  }
+  .flow-step.active { opacity:1; transform:translateX(0); }
+  .flow-step.done { opacity:.6; transform:translateX(0); }
+  .step-arrow {
+    font-size:20px;
+    color:var(--accent);
+  }
+  .step-arrow.right { }
+  .step-arrow.left { color:var(--accent3); }
+  .step-label {
+    font-size:12px; font-weight:600;
+    background:var(--surface2); border:1px solid var(--border);
+    padding:4px 10px; border-radius:6px; flex:1;
+  }
+  .step-label.req { border-color:rgba(0,212,255,.4); color:var(--accent); }
+  .step-label.res { border-color:rgba(16,185,129,.4); color:var(--accent3); }
+  .sim-controls { display:flex; gap:12px; margin-top:20px; }
+  .sim-btn {
+    padding:9px 20px; border-radius:8px; border:none;
+    font-size:13px; font-weight:700; cursor:pointer;
+    transition:all .2s;
+  }
+  .sim-btn.primary {
+    background:linear-gradient(135deg,var(--accent2),var(--accent));
+    color:#fff;
+  }
+  .sim-btn.secondary {
+    background:var(--surface2); color:var(--text);
+    border:1px solid var(--border);
+  }
+  .sim-btn:hover { transform:translateY(-1px); }
+  .sim-status {
+    margin-top:14px; padding:10px 14px;
+    background:var(--surface2); border-radius:8px;
+    font-size:13px; color:var(--accent);
+    font-family:'Space Mono',monospace;
+    min-height:42px; border:1px solid var(--border);
+  }
+
+  /* RTT Visual */
+  .rtt-visual {
+    background:var(--surface2); border-radius:12px; padding:20px;
+    margin-top:16px; position:relative; overflow:hidden;
+  }
+  .rtt-label { font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin-bottom:12px; }
+  .rtt-bar-wrapper { display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+  .rtt-bar-label { width:140px; font-size:12px; color:var(--muted); text-align:right; flex-shrink:0; }
+  .rtt-bar-track { flex:1; height:10px; background:var(--border); border-radius:5px; overflow:hidden; }
+  .rtt-bar-fill {
+    height:100%; border-radius:5px;
+    transition:width 1s ease;
+    width:0;
+  }
+  .rtt-bar-fill.rtt1 { background:var(--accent2); }
+  .rtt-bar-fill.rtt2 { background:var(--accent); }
+  .rtt-bar-fill.rtt3 { background:var(--accent3); }
+  .rtt-total {
+    margin-top:12px; text-align:center;
+    font-size:13px; font-weight:700; color:var(--accent);
+    font-family:'Space Mono',monospace;
+  }
+
+  /* DNS Hierarchy */
+  .dns-tree {
+    text-align:center; padding:20px;
+  }
+  .dns-node {
+    display:inline-block;
+    background:var(--surface2); border:2px solid var(--border);
+    border-radius:10px; padding:8px 16px; margin:6px;
+    font-size:13px; font-weight:700;
+    cursor:pointer; transition:all .2s;
+    position:relative;
+  }
+  .dns-node:hover, .dns-node.active {
+    border-color:var(--accent); color:var(--accent);
+    background:rgba(0,212,255,.08);
+    box-shadow:0 0 15px rgba(0,212,255,.2);
+  }
+  .dns-level { margin:8px 0; }
+  .dns-level-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; margin-bottom:6px; }
+  .dns-info-box {
+    background:var(--surface); border:1px solid var(--accent);
+    border-radius:10px; padding:14px 18px;
+    font-size:13px; margin-top:16px;
+    color:var(--text); text-align:left;
+    display:none;
+  }
+  .dns-info-box.show { display:block; }
+
+  /* Cookie Walkthrough */
+  .cookie-steps {
+    display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px;
+  }
+  @media(max-width:600px) { .cookie-steps { grid-template-columns:1fr; } }
+  .cookie-step {
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:12px; padding:16px;
+    cursor:pointer; transition:all .2s;
+    position:relative;
+  }
+  .cookie-step:hover { border-color:var(--accent4); }
+  .cookie-step.selected { border-color:var(--accent4); background:rgba(245,158,11,.06); }
+  .cookie-step-num {
+    width:28px; height:28px; border-radius:50%;
+    background:linear-gradient(135deg,var(--accent4),#f97316);
+    color:#fff; font-size:12px; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom:10px;
+  }
+  .cookie-step h4 { font-size:13px; font-weight:700; color:var(--accent4); margin-bottom:6px; }
+  .cookie-step p { font-size:12.5px; color:var(--muted); }
+
+  /* TCP vs UDP toggle */
+  .protocol-toggle {
+    display:flex; gap:0; margin-bottom:24px;
+    background:var(--surface2); border-radius:10px; padding:4px;
+    width:fit-content;
+  }
+  .ptog-btn {
+    padding:8px 24px; border:none; border-radius:8px;
+    font-size:13px; font-weight:700; cursor:pointer;
+    transition:all .2s; background:transparent; color:var(--muted);
+  }
+  .ptog-btn.active { background:var(--accent); color:#000; }
+  .protocol-detail { display:none; }
+  .protocol-detail.show { display:block; }
+
+  /* Code block */
+  pre {
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:10px; padding:20px;
+    font-family:'Space Mono',monospace; font-size:12px;
+    line-height:1.7; color:#a8b8d8; overflow-x:auto;
+    margin:16px 0;
+  }
+  .code-kw { color:#c084fc; }
+  .code-str { color:#86efac; }
+  .code-cmt { color:#475569; }
+  .code-fn { color:#38bdf8; }
+  .code-var { color:#fbbf24; }
+
+  /* QUIZ */
+  #quiz { padding-bottom:100px; }
+  .quiz-header {
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:32px; flex-wrap:wrap; gap:12px;
+  }
+  .quiz-score {
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:10px; padding:10px 20px;
+    font-family:'Space Mono',monospace; font-size:14px; font-weight:700;
+    color:var(--accent);
+  }
+  .question-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:16px; padding:28px; margin-bottom:20px;
+    transition:border-color .3s;
+  }
+  .question-card.correct { border-color:var(--accent3); }
+  .question-card.wrong { border-color:var(--danger); }
+  .q-num {
+    font-size:11px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.1em; color:var(--muted); margin-bottom:10px;
+    font-family:'Space Mono',monospace;
+  }
+  .q-text { font-size:1rem; font-weight:600; margin-bottom:20px; line-height:1.5; }
+  .q-options { display:grid; gap:10px; }
+  .q-option {
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:10px; padding:12px 16px;
+    cursor:pointer; font-size:14px;
+    transition:all .2s; text-align:left;
+    display:flex; align-items:center; gap:12px;
+  }
+  .q-option:hover:not(:disabled) { border-color:var(--accent); background:rgba(0,212,255,.06); }
+  .q-option.selected-correct { border-color:var(--accent3); background:rgba(16,185,129,.1); color:var(--accent3); }
+  .q-option.selected-wrong { border-color:var(--danger); background:rgba(239,68,68,.1); color:var(--danger); }
+  .q-option.reveal-correct { border-color:var(--accent3); background:rgba(16,185,129,.06); color:var(--accent3); }
+  .q-option:disabled { cursor:default; }
+  .q-option-key {
+    width:26px; height:26px; border-radius:6px;
+    background:var(--border); font-size:12px; font-weight:700;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .q-feedback {
+    margin-top:14px; padding:12px 16px;
+    border-radius:10px; font-size:13.5px;
+    display:none;
+  }
+  .q-feedback.show { display:block; }
+  .q-feedback.correct { background:rgba(16,185,129,.1); border:1px solid rgba(16,185,129,.3); color:var(--accent3); }
+  .q-feedback.wrong { background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.3); color:#fca5a5; }
+  .quiz-progress {
+    position:fixed; bottom:0; left:0; right:0;
+    background:rgba(10,14,26,.95); backdrop-filter:blur(12px);
+    border-top:1px solid var(--border);
+    padding:12px 24px;
+    display:flex; align-items:center; gap:16px;
+    z-index:50;
+  }
+  .progress-bar {
+    flex:1; height:6px; background:var(--border); border-radius:3px; overflow:hidden;
+  }
+  .progress-fill {
+    height:100%; background:linear-gradient(90deg,var(--accent2),var(--accent));
+    border-radius:3px; transition:width .4s;
+  }
+  .progress-text { font-size:13px; color:var(--muted); white-space:nowrap; font-family:'Space Mono',monospace; }
+
+  /* Highlight box */
+  .info-box {
+    border-radius:12px; padding:16px 20px; margin:16px 0;
+    font-size:13.5px; display:flex; gap:12px; align-items:flex-start;
+    border:1px solid;
+  }
+  .info-box.blue { background:rgba(0,212,255,.06); border-color:rgba(0,212,255,.2); color:#7dd3fc; }
+  .info-box.purple { background:rgba(124,58,237,.06); border-color:rgba(124,58,237,.2); color:#c4b5fd; }
+  .info-box.green { background:rgba(16,185,129,.06); border-color:rgba(16,185,129,.2); color:#6ee7b7; }
+  .info-box.yellow { background:rgba(245,158,11,.06); border-color:rgba(245,158,11,.2); color:#fcd34d; }
+  .info-box-icon { font-size:18px; flex-shrink:0; }
+
+  /* Scrollspy */
+  section { scroll-margin-top:70px; }
+
+  /* Animate on scroll */
+  .fade-in {
+    opacity:0; transform:translateY(20px);
+    transition:opacity .5s, transform .5s;
+  }
+  .fade-in.visible { opacity:1; transform:translateY(0); }
+
+  /* P2P vs Client-Server diagram */
+  .arch-diagram {
+    display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:16px;
+  }
+  @media(max-width:600px) { .arch-diagram { grid-template-columns:1fr; } }
+  .arch-box {
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:12px; padding:20px; text-align:center;
+  }
+  .arch-box h4 { font-size:13px; font-weight:700; margin-bottom:12px; }
+  .arch-nodes {
+    display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin-bottom:12px;
+  }
+  .arch-node {
+    width:32px; height:32px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:14px; position:relative;
+  }
+  .arch-node.server { background:rgba(0,212,255,.2); border:2px solid var(--accent); }
+  .arch-node.client { background:rgba(124,58,237,.2); border:2px solid var(--accent2); }
+  .arch-node.peer { background:rgba(16,185,129,.2); border:2px solid var(--accent3); }
+
+  /* Tabs */
+  .tabs { display:flex; gap:0; border-bottom:2px solid var(--border); margin-bottom:24px; }
+  .tab-btn {
+    padding:10px 20px; background:transparent; border:none;
+    color:var(--muted); font-size:13px; font-weight:700;
+    cursor:pointer; transition:all .2s;
+    border-bottom:2px solid transparent; margin-bottom:-2px;
+    font-family:'Sora',sans-serif;
+  }
+  .tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); }
+  .tab-pane { display:none; }
+  .tab-pane.active { display:block; }
+
+  /* Pulse animation */
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+  @keyframes slideIn { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:translateX(0)} }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+  .float-anim { animation: float 3s ease-in-out infinite; }
+
+  /* DNS Query Simulator */
+  .dns-sim {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:16px; padding:24px; margin-top:20px;
+  }
+  .dns-sim-grid {
+    display:grid; grid-template-columns:repeat(4,1fr); gap:8px;
+    margin-bottom:20px;
+  }
+  @media(max-width:700px){ .dns-sim-grid{ grid-template-columns:repeat(2,1fr); } }
+  .dns-server-box {
+    background:var(--surface2); border:2px solid var(--border);
+    border-radius:10px; padding:12px; text-align:center;
+    font-size:12px; transition:all .3s;
+  }
+  .dns-server-box.querying { border-color:var(--accent); animation:pulse 1s infinite; }
+  .dns-server-box.answered { border-color:var(--accent3); }
+  .dns-server-icon { font-size:22px; margin-bottom:6px; display:block; }
+  .dns-server-name { font-weight:700; font-size:11px; }
+  .dns-log {
+    background:var(--surface2); border-radius:8px;
+    padding:12px; font-family:'Space Mono',monospace;
+    font-size:11.5px; color:#64748b;
+    min-height:80px; max-height:120px; overflow-y:auto;
+    margin-bottom:16px; border:1px solid var(--border);
+  }
+  .dns-log-entry { color:var(--accent); animation:slideIn .3s; margin-bottom:2px; }
+  .dns-log-entry.res { color:var(--accent3); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="mainNav">
+  <a href="#hero">🏠 Home</a>
+  <a href="#principles">Principles</a>
+  <a href="#architectures">Architectures</a>
+  <a href="#transport">Transport</a>
+  <a href="#http">HTTP</a>
+  <a href="#cookies">Cookies</a>
+  <a href="#dns">DNS</a>
+  <a href="#sockets">Sockets</a>
+  <a href="#quiz">📝 Quiz</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="tag">📡 NET CENTRIC COMPUTING</div>
+  <h1>Chapter 2<br>Application Layer</h1>
+  <p>An interactive guide to every concept — from HTTP and DNS to socket programming. Diagrams, simulations, and 30 practice questions.</p>
+  <div class="hero-badges">
+    <div class="badge">🌐 HTTP & Web</div>
+    <div class="badge">📮 DNS</div>
+    <div class="badge">🔌 Sockets</div>
+    <div class="badge">🍪 Cookies</div>
+    <div class="badge">🔁 TCP vs UDP</div>
+  </div>
+  <a href="#principles" class="start-btn">Start Learning ↓</a>
+</section>
+
+<!-- 1. PRINCIPLES -->
+<section class="section fade-in" id="principles">
+  <div class="section-header">
+    <div class="section-num">01</div>
+    <h2>Principles of Network Applications</h2>
+  </div>
+
+  <div class="info-box blue">
+    <span class="info-box-icon">💡</span>
+    <div>Network apps run on <strong>end systems</strong> (not on network-core devices like routers). This allows rapid development and deployment without changing the underlying network infrastructure.</div>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">🖥️</div>
+      <h3>What is a Network App?</h3>
+      <ul>
+        <li>Programs running on different end systems</li>
+        <li>Communicate with each other over the network</li>
+        <li>e.g., web browser ↔ web server</li>
+        <li>No software needed for routers/switches</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-icon">📋</div>
+      <h3>Application-Layer Protocol Defines:</h3>
+      <ul>
+        <li><strong>Types</strong> of messages (request, response)</li>
+        <li><strong>Syntax</strong>: fields & how they're delineated</li>
+        <li><strong>Semantics</strong>: meaning of information</li>
+        <li><strong>Rules</strong> for when/how to send messages</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔓</div>
+      <h3>Open vs Proprietary Protocols</h3>
+      <ul>
+        <li><strong>Open</strong>: defined in RFCs (HTTP, SMTP, DNS)</li>
+        <li>Anyone can implement; ensures interoperability</li>
+        <li><strong>Proprietary</strong>: e.g., Skype, Zoom</li>
+        <li>Closed design, vendor controls</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- 2. ARCHITECTURES -->
+<section class="section fade-in" id="architectures">
+  <div class="section-header">
+    <div class="section-num">02</div>
+    <h2>Application Architectures</h2>
+  </div>
+
+  <div class="arch-diagram">
+    <div class="arch-box">
+      <h4 style="color:var(--accent)">🏗️ Client-Server</h4>
+      <div class="arch-nodes">
+        <div class="arch-node server">🖥️</div>
+        <div style="width:100%;display:flex;justify-content:center;gap:12px;flex-wrap:wrap">
+          <div class="arch-node client">💻</div>
+          <div class="arch-node client">📱</div>
+          <div class="arch-node client">🖥️</div>
+          <div class="arch-node client">📟</div>
+        </div>
+      </div>
+      <ul style="text-align:left;font-size:12.5px;color:#64748b;padding-left:16px">
+        <li>Always-on server with permanent IP</li>
+        <li>Clients contact server intermittently</li>
+        <li>Clients don't talk to each other</li>
+        <li>Examples: HTTP, IMAP, FTP</li>
+      </ul>
+    </div>
+    <div class="arch-box">
+      <h4 style="color:var(--accent3)">🔁 Peer-to-Peer (P2P)</h4>
+      <div class="arch-nodes">
+        <div class="arch-node peer">💻</div>
+        <div class="arch-node peer">📱</div>
+        <div class="arch-node peer">🖥️</div>
+        <div class="arch-node peer">💻</div>
+      </div>
+      <ul style="text-align:left;font-size:12.5px;color:#64748b;padding-left:16px">
+        <li>No always-on server</li>
+        <li>Arbitrary end systems communicate directly</li>
+        <li>Self-scalable: new peers = new capacity</li>
+        <li>Complex management; dynamic IPs</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="diagram-box" style="margin-top:24px;">
+    <h3>🔌 Sockets & Process Communication</h3>
+    <p style="font-size:13.5px;color:#64748b;margin-bottom:16px">A <strong style="color:var(--accent)">socket</strong> is the interface between the application and the transport layer — think of it as a door. The sending process shoves data through the door; the OS handles delivery to the socket at the receiving end.</p>
+    <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;justify-content:center;padding:16px;background:var(--surface2);border-radius:12px;">
+      <div style="text-align:center">
+        <div style="font-size:28px">💻</div>
+        <div style="font-size:11px;color:var(--muted)">Process A</div>
+        <div style="font-size:11px;background:rgba(0,212,255,.1);border:1px solid var(--accent);border-radius:6px;padding:3px 8px;color:var(--accent);margin-top:4px">Socket</div>
+      </div>
+      <div style="font-size:24px;color:var(--accent)">⟶ Internet ⟶</div>
+      <div style="text-align:center">
+        <div style="font-size:11px;background:rgba(0,212,255,.1);border:1px solid var(--accent);border-radius:6px;padding:3px 8px;color:var(--accent);margin-bottom:4px">Socket</div>
+        <div style="font-size:28px">🖥️</div>
+        <div style="font-size:11px;color:var(--muted)">Process B</div>
+      </div>
+    </div>
+    <div class="info-box purple" style="margin-top:16px">
+      <span class="info-box-icon">📍</span>
+      <div><strong>Addressing:</strong> A process is identified by its IP address + port number. IP alone isn't enough because many processes can run on one host. HTTP uses port 80, mail uses port 25.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- 3. TRANSPORT SERVICES -->
+<section class="section fade-in" id="transport">
+  <div class="section-header">
+    <div class="section-num">03</div>
+    <h2>Transport Services</h2>
+  </div>
+
+  <p style="color:#64748b;margin-bottom:24px;font-size:14px">Apps need different things from the network. The four key dimensions are:</p>
+
+  <div class="card-grid" style="margin-bottom:28px;">
+    <div class="card">
+      <div class="card-icon">✅</div>
+      <h3>Data Integrity</h3>
+      <p>File transfer & web transactions need 100% reliable delivery. Audio streaming can tolerate some loss.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">⏱️</div>
+      <h3>Timing</h3>
+      <p>VoIP and interactive games need low delay (10s of ms) to be usable. File download doesn't care.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📊</div>
+      <h3>Throughput</h3>
+      <p>Multimedia needs a minimum guaranteed rate. "Elastic" apps (email) use whatever they get.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔒</div>
+      <h3>Security</h3>
+      <p>Encryption, data integrity verification, and endpoint authentication.</p>
+    </div>
+  </div>
+
+  <div class="diagram-box">
+    <h3>TCP vs UDP — Choose Your Protocol</h3>
+    <div class="protocol-toggle">
+      <button class="ptog-btn active" onclick="switchProto('tcp')">TCP</button>
+      <button class="ptog-btn" onclick="switchProto('udp')">UDP</button>
+    </div>
+    <div class="protocol-detail show" id="proto-tcp">
+      <div class="card-grid">
+        <div class="card" style="border-color:rgba(0,212,255,.3)">
+          <h3>What TCP Provides ✓</h3>
+          <ul>
+            <li>Reliable transport — no data lost</li>
+            <li>Flow control (won't overwhelm receiver)</li>
+            <li>Congestion control (throttles on overload)</li>
+            <li>Connection-oriented (handshake setup)</li>
+            <li>In-order delivery</li>
+          </ul>
+        </div>
+        <div class="card" style="border-color:rgba(239,68,68,.2)">
+          <h3>What TCP Does NOT Provide ✗</h3>
+          <ul>
+            <li>Timing guarantees</li>
+            <li>Minimum throughput guarantee</li>
+            <li>Security (need TLS on top)</li>
+          </ul>
+          <p style="margin-top:10px"><strong>Apps using TCP:</strong> HTTP, FTP, SMTP, streaming audio/video</p>
+        </div>
+      </div>
+    </div>
+    <div class="protocol-detail" id="proto-udp">
+      <div class="card-grid">
+        <div class="card" style="border-color:rgba(245,158,11,.3)">
+          <h3>What UDP Provides</h3>
+          <ul>
+            <li>Lightweight, connectionless</li>
+            <li>No handshake — just send</li>
+            <li>Lower overhead than TCP</li>
+          </ul>
+        </div>
+        <div class="card" style="border-color:rgba(239,68,68,.2)">
+          <h3>What UDP Does NOT Provide ✗</h3>
+          <ul>
+            <li>No reliability</li>
+            <li>No flow control</li>
+            <li>No congestion control</li>
+            <li>No security, no ordering</li>
+          </ul>
+        </div>
+      </div>
+      <div class="info-box yellow">
+        <span class="info-box-icon">❓</span>
+        <div><strong>Why use UDP?</strong> Speed and simplicity. For real-time apps like DNS lookups, VoIP, or video streaming, the overhead of TCP handshaking is too costly. A lost packet is better than a delayed one.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="diagram-box">
+    <h3>🔒 Securing TCP with TLS</h3>
+    <p style="font-size:13.5px;color:#64748b;">Vanilla TCP has no encryption. <strong style="color:var(--accent)">Transport Layer Security (TLS)</strong> is implemented in the application layer on top of TCP, providing encrypted connections, data integrity, and endpoint authentication.</p>
+    <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap">
+      <div style="flex:1;min-width:160px;background:var(--surface2);border-radius:10px;padding:14px;border:1px solid var(--border);text-align:center;font-size:12.5px">
+        <div style="font-size:20px;margin-bottom:6px">📦</div>
+        <strong style="color:var(--text)">Application</strong>
+        <div style="color:var(--muted);margin-top:4px">Uses TLS library</div>
+      </div>
+      <div style="display:flex;align-items:center;font-size:20px;color:var(--muted)">↓</div>
+      <div style="flex:1;min-width:160px;background:rgba(0,212,255,.06);border-radius:10px;padding:14px;border:1px solid rgba(0,212,255,.2);text-align:center;font-size:12.5px">
+        <div style="font-size:20px;margin-bottom:6px">🔐</div>
+        <strong style="color:var(--accent)">TLS (App Layer)</strong>
+        <div style="color:var(--muted);margin-top:4px">Encrypts data</div>
+      </div>
+      <div style="display:flex;align-items:center;font-size:20px;color:var(--muted)">↓</div>
+      <div style="flex:1;min-width:160px;background:var(--surface2);border-radius:10px;padding:14px;border:1px solid var(--border);text-align:center;font-size:12.5px">
+        <div style="font-size:20px;margin-bottom:6px">🌐</div>
+        <strong style="color:var(--text)">TCP</strong>
+        <div style="color:var(--muted);margin-top:4px">Reliable transport</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- 4. HTTP -->
+<section class="section fade-in" id="http">
+  <div class="section-header">
+    <div class="section-num">04</div>
+    <h2>Web and HTTP</h2>
+  </div>
+
+  <div class="info-box blue">
+    <span class="info-box-icon">🌐</span>
+    <div><strong>HTTP (HyperText Transfer Protocol)</strong> is the Web's application-layer protocol. It follows a client/server model and runs over TCP (port 80). Critically, HTTP is <strong>stateless</strong> — the server keeps no memory of past requests.</div>
+  </div>
+
+  <!-- HTTP Flow Simulator -->
+  <div class="flow-simulator">
+    <div class="flow-sim-title">🎬 HTTP Request/Response Simulator</div>
+    <div style="margin-bottom:12px;font-size:13px;color:var(--muted)">Click "Next Step" to walk through an HTTP exchange step by step</div>
+    <div class="flow-actors">
+      <div class="flow-actor">
+        <div class="actor-box" id="client-box">
+          <span class="actor-icon">💻</span>
+          <div style="font-size:11px;font-weight:700">CLIENT</div>
+          <div style="font-size:10px;color:var(--muted)">Browser</div>
+        </div>
+      </div>
+      <div class="flow-timeline">
+        <ul class="flow-steps" id="flowSteps">
+          <li class="flow-step" id="step0">
+            <span class="step-arrow right">→</span>
+            <span class="step-label req">1. TCP SYN (initiate connection)</span>
+          </li>
+          <li class="flow-step" id="step1">
+            <span class="step-arrow left">←</span>
+            <span class="step-label res">2. TCP SYN-ACK (server accepts)</span>
+          </li>
+          <li class="flow-step" id="step2">
+            <span class="step-arrow right">→</span>
+            <span class="step-label req">3. TCP ACK + HTTP GET request</span>
+          </li>
+          <li class="flow-step" id="step3">
+            <span class="step-arrow left">←</span>
+            <span class="step-label res">4. HTTP 200 OK + data</span>
+          </li>
+          <li class="flow-step" id="step4">
+            <span class="step-arrow left">←</span>
+            <span class="step-label res">5. TCP FIN (connection close)</span>
+          </li>
+        </ul>
+      </div>
+      <div class="flow-actor">
+        <div class="actor-box" id="server-box">
+          <span class="actor-icon">🖥️</span>
+          <div style="font-size:11px;font-weight:700">SERVER</div>
+          <div style="font-size:10px;color:var(--muted)">Apache/Nginx</div>
+        </div>
+      </div>
+    </div>
+    <div class="sim-controls">
+      <button class="sim-btn primary" onclick="nextFlowStep()">Next Step ▶</button>
+      <button class="sim-btn secondary" onclick="resetFlow()">↺ Reset</button>
+    </div>
+    <div class="sim-status" id="flowStatus">Press "Next Step" to begin the HTTP simulation...</div>
+  </div>
+
+  <!-- RTT Visualizer -->
+  <div class="diagram-box">
+    <h3>⏱️ Non-Persistent HTTP Response Time = 2RTT + File Transmission</h3>
+    <p style="font-size:13.5px;color:#64748b;margin-bottom:16px">RTT = Round-Trip Time (time for a packet to travel client → server → client)</p>
+    <div class="rtt-visual" id="rttViz">
+      <div class="rtt-label">Non-Persistent HTTP (one object)</div>
+      <div class="rtt-bar-wrapper">
+        <div class="rtt-bar-label">RTT 1 – TCP setup</div>
+        <div class="rtt-bar-track"><div class="rtt-bar-fill rtt1" id="rtt1" style="width:0%"></div></div>
+      </div>
+      <div class="rtt-bar-wrapper">
+        <div class="rtt-bar-label">RTT 2 – HTTP request</div>
+        <div class="rtt-bar-track"><div class="rtt-bar-fill rtt2" id="rtt2" style="width:0%"></div></div>
+      </div>
+      <div class="rtt-bar-wrapper">
+        <div class="rtt-bar-label">File transmission</div>
+        <div class="rtt-bar-track"><div class="rtt-bar-fill rtt3" id="rtt3" style="width:0%"></div></div>
+      </div>
+      <div class="rtt-total" id="rttTotal" style="opacity:0">Total = 2 RTT + File Transmission Time</div>
+    </div>
+    <button class="sim-btn primary" style="margin-top:16px" onclick="animateRTT()">▶ Animate RTT</button>
+    <div class="info-box green" style="margin-top:16px">
+      <span class="info-box-icon">✅</span>
+      <div><strong>Persistent HTTP (HTTP 1.1)</strong> keeps the connection open after sending — subsequent objects only need 1 RTT each, roughly cutting response time in half.</div>
+    </div>
+  </div>
+
+  <!-- HTTP Messages -->
+  <div class="diagram-box">
+    <h3>📨 HTTP Message Formats</h3>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('req-tab','reqtabs')">Request</button>
+      <button class="tab-btn" onclick="switchTab('res-tab','reqtabs')">Response</button>
+      <button class="tab-btn" onclick="switchTab('methods-tab','reqtabs')">Methods</button>
+      <button class="tab-btn" onclick="switchTab('codes-tab','reqtabs')">Status Codes</button>
+    </div>
+    <div id="reqtabs">
+      <div class="tab-pane active" id="req-tab">
+        <pre><span class="code-kw">GET</span> <span class="code-str">/index.html</span> HTTP/1.1\r\n
+<span class="code-var">Host:</span> www-net.cs.umass.edu\r\n
+<span class="code-var">User-Agent:</span> Firefox/3.6.10\r\n
+<span class="code-var">Accept:</span> text/html,application/xhtml+xml\r\n
+<span class="code-var">Accept-Language:</span> en-us,en;q=0.5\r\n
+<span class="code-var">Connection:</span> keep-alive\r\n
+\r\n  <span class="code-cmt">← blank line = end of headers</span></pre>
+        <p style="font-size:13px;color:#64748b;">The request line has: method + URL + HTTP version. Headers follow in key: value format. A blank line marks the end. An optional body follows for POST requests.</p>
+      </div>
+      <div class="tab-pane" id="res-tab">
+        <pre>HTTP/1.1 <span class="code-str">200 OK</span>\r\n
+<span class="code-var">Date:</span> Sun, 26 Sep 2010 20:09:20 GMT\r\n
+<span class="code-var">Server:</span> Apache/2.0.52\r\n
+<span class="code-var">Content-Length:</span> 2652\r\n
+<span class="code-var">Content-Type:</span> text/html; charset=ISO-8859-1\r\n
+\r\n
+<span class="code-cmt">...data data data data data...</span></pre>
+        <p style="font-size:13px;color:#64748b;">The status line gives: protocol + status code + phrase. Then headers. Then the body (the actual content).</p>
+      </div>
+      <div class="tab-pane" id="methods-tab">
+        <div class="card-grid">
+          <div class="card"><h3>GET</h3><p>Retrieve a resource. Can pass data via URL: <code style="color:var(--accent)">?key=value</code></p></div>
+          <div class="card"><h3>POST</h3><p>Send data in the message body (e.g. form submissions).</p></div>
+          <div class="card"><h3>HEAD</h3><p>Like GET but server returns headers only — no body. Useful for checking if a file exists.</p></div>
+          <div class="card"><h3>PUT</h3><p>Upload/replace a file at a specified URL on the server.</p></div>
+        </div>
+      </div>
+      <div class="tab-pane" id="codes-tab">
+        <table class="compare-table">
+          <tr><th>Code</th><th>Meaning</th><th>When it happens</th></tr>
+          <tr><td><span style="color:var(--accent3)">200 OK</span></td><td>Success</td><td>Request worked, object returned</td></tr>
+          <tr><td><span style="color:var(--accent4)">301 Moved</span></td><td>Redirect</td><td>Object moved; new URL in Location header</td></tr>
+          <tr><td><span style="color:var(--danger)">400 Bad Request</span></td><td>Client Error</td><td>Server couldn't understand the message</td></tr>
+          <tr><td><span style="color:var(--danger)">404 Not Found</span></td><td>Not Found</td><td>Requested document doesn't exist on server</td></tr>
+          <tr><td><span style="color:var(--danger)">505 HTTP Ver</span></td><td>Version Error</td><td>Server doesn't support HTTP version</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- 5. COOKIES -->
+<section class="section fade-in" id="cookies">
+  <div class="section-header">
+    <div class="section-num">05</div>
+    <h2>Maintaining State: Cookies</h2>
+  </div>
+
+  <div class="info-box yellow">
+    <span class="info-box-icon">🍪</span>
+    <div>HTTP is <strong>stateless</strong>, but sites need to remember users. Cookies solve this by storing a unique ID in the browser, linked to a server-side database record.</div>
+  </div>
+
+  <p style="color:#64748b;font-size:14px;margin-bottom:16px">There are <strong style="color:var(--text)">4 components</strong> to the cookie system. Click each to learn about it:</p>
+  <div class="cookie-steps" id="cookieSteps">
+    <div class="cookie-step" onclick="selectCookie(0)">
+      <div class="cookie-step-num">1</div>
+      <h4>Cookie header in HTTP response</h4>
+      <p>Server sends <code>Set-Cookie: 1678</code> when it first sees a user</p>
+    </div>
+    <div class="cookie-step" onclick="selectCookie(1)">
+      <div class="cookie-step-num">2</div>
+      <h4>Cookie header in HTTP request</h4>
+      <p>On every future visit, browser sends <code>Cookie: 1678</code></p>
+    </div>
+    <div class="cookie-step" onclick="selectCookie(2)">
+      <div class="cookie-step-num">3</div>
+      <h4>Cookie file on user's host</h4>
+      <p>Browser manages a local file mapping domains → cookie values</p>
+    </div>
+    <div class="cookie-step" onclick="selectCookie(3)">
+      <div class="cookie-step-num">4</div>
+      <h4>Back-end database</h4>
+      <p>Server stores user data linked to the cookie ID (cart, prefs, session)</p>
+    </div>
+  </div>
+  <div id="cookieDetail" style="display:none;margin-top:16px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:12px;padding:20px;font-size:14px;color:#fcd34d;"></div>
+
+  <div class="info-box blue" style="margin-top:20px">
+    <span class="info-box-icon">🔍</span>
+    <div><strong>Privacy concern:</strong> Third-party tracking cookies can follow you across multiple websites by embedding the same cookie from a shared domain (e.g., an ad network), building a profile of your browsing habits.</div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- 6. DNS -->
+<section class="section fade-in" id="dns">
+  <div class="section-header">
+    <div class="section-num">06</div>
+    <h2>DNS — Domain Name System</h2>
+  </div>
+
+  <div class="info-box purple">
+    <span class="info-box-icon">🗂️</span>
+    <div>DNS maps human-readable hostnames (e.g. <code>cs.umass.edu</code>) to IP addresses (e.g. <code>128.119.245.12</code>). It's a <strong>distributed hierarchical database</strong> implemented as an application-layer protocol.</div>
+  </div>
+
+  <!-- DNS Hierarchy Interactive -->
+  <div class="diagram-box">
+    <h3>🌳 DNS Hierarchy — Click any server to learn more</h3>
+    <div class="dns-tree">
+      <div class="dns-level"><div class="dns-level-label">Root</div>
+        <div class="dns-node" onclick="showDnsInfo('root')">. (Root)</div>
+      </div>
+      <div style="color:var(--muted);font-size:20px">↓</div>
+      <div class="dns-level"><div class="dns-level-label">Top-Level Domain (TLD)</div>
+        <div class="dns-node" onclick="showDnsInfo('com'">.com</div>
+        <div class="dns-node" onclick="showDnsInfo('org'">.org</div>
+        <div class="dns-node" onclick="showDnsInfo('edu'">.edu</div>
+        <div class="dns-node" onclick="showDnsInfo('jm'">.jm .tt .uk</div>
+      </div>
+      <div style="color:var(--muted);font-size:20px">↓</div>
+      <div class="dns-level"><div class="dns-level-label">Authoritative</div>
+        <div class="dns-node" onclick="showDnsInfo('amazon')">amazon.com</div>
+        <div class="dns-node" onclick="showDnsInfo('umass')">umass.edu</div>
+        <div class="dns-node" onclick="showDnsInfo('nyu')">nyu.edu</div>
+      </div>
+    </div>
+    <div class="dns-info-box" id="dnsInfoBox"></div>
+  </div>
+
+  <!-- DNS Lookup Simulator -->
+  <div class="dns-sim">
+    <h3 style="color:var(--accent);font-size:1rem;margin-bottom:16px">🔍 DNS Iterative Query Simulator</h3>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Simulate looking up <strong style="color:var(--text)">www.amazon.com</strong> — watch the queries flow through the hierarchy!</p>
+    <div class="dns-sim-grid">
+      <div class="dns-server-box" id="dns-client">
+        <span class="dns-server-icon">💻</span>
+        <div class="dns-server-name">Your Host</div>
+        <div style="font-size:10px;color:var(--muted)">engineering.nyu.edu</div>
+      </div>
+      <div class="dns-server-box" id="dns-local">
+        <span class="dns-server-icon">🏠</span>
+        <div class="dns-server-name">Local DNS</div>
+        <div style="font-size:10px;color:var(--muted)">dns.nyu.edu</div>
+      </div>
+      <div class="dns-server-box" id="dns-root">
+        <span class="dns-server-icon">🌍</span>
+        <div class="dns-server-name">Root DNS</div>
+        <div style="font-size:10px;color:var(--muted)">(13 servers)</div>
+      </div>
+      <div class="dns-server-box" id="dns-tld">
+        <span class="dns-server-icon">🏢</span>
+        <div class="dns-server-name">TLD .com</div>
+        <div style="font-size:10px;color:var(--muted)">Network Solutions</div>
+      </div>
+    </div>
+    <div class="dns-server-box" id="dns-auth" style="max-width:200px;margin:0 auto 16px">
+      <span class="dns-server-icon">✅</span>
+      <div class="dns-server-name">Authoritative DNS</div>
+      <div style="font-size:10px;color:var(--muted)">dns.amazon.com</div>
+    </div>
+    <div class="dns-log" id="dnsLog">Ready to simulate DNS lookup for www.amazon.com...<br></div>
+    <div class="sim-controls">
+      <button class="sim-btn primary" onclick="nextDNSStep()">Next Query Step ▶</button>
+      <button class="sim-btn secondary" onclick="resetDNS()">↺ Reset</button>
+    </div>
+  </div>
+
+  <div class="card-grid" style="margin-top:24px">
+    <div class="card">
+      <h3>📝 DNS Records (RR)</h3>
+      <table style="font-size:12px;width:100%;border-collapse:collapse">
+        <tr style="color:var(--accent4)"><th style="text-align:left;padding:4px">Type</th><th style="text-align:left;padding:4px">Name</th><th style="text-align:left;padding:4px">Value</th></tr>
+        <tr style="color:#94a3b8"><td style="padding:4px">A</td><td>hostname</td><td>IP address</td></tr>
+        <tr style="color:#94a3b8"><td style="padding:4px">NS</td><td>domain</td><td>authoritative server hostname</td></tr>
+        <tr style="color:#94a3b8"><td style="padding:4px">CNAME</td><td>alias</td><td>canonical name</td></tr>
+        <tr style="color:#94a3b8"><td style="padding:4px">MX</td><td>domain</td><td>mail server name</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3>⚡ DNS Caching</h3>
+      <ul>
+        <li>Name servers cache mappings (with TTL)</li>
+        <li>TLD servers typically cached locally → root rarely visited</li>
+        <li>Cached entries can be stale if IP changes</li>
+        <li>Update standard: RFC 2136</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>🛡️ DNS Security Threats</h3>
+      <ul>
+        <li><strong>DDoS</strong>: bombard root/TLD servers</li>
+        <li><strong>Man-in-middle</strong>: intercept queries</li>
+        <li><strong>DNS poisoning</strong>: fake replies cached</li>
+        <li><strong>DNSSEC</strong> (RFC 4033) counters these</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- 7. SOCKETS -->
+<section class="section fade-in" id="sockets">
+  <div class="section-header">
+    <div class="section-num">07</div>
+    <h2>Socket Programming</h2>
+  </div>
+
+  <div class="info-box green">
+    <span class="info-box-icon">🔌</span>
+    <div>A <strong>socket</strong> is the API between the application and the transport layer. You write to/read from sockets like files. There are two types: <strong>UDP sockets</strong> (connectionless datagrams) and <strong>TCP sockets</strong> (reliable byte streams).</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('udp-code','socktabs')">UDP Client/Server</button>
+    <button class="tab-btn" onclick="switchTab('tcp-code','socktabs')">TCP Client/Server</button>
+    <button class="tab-btn" onclick="switchTab('diff-tab','socktabs')">Key Differences</button>
+  </div>
+
+  <div id="socktabs">
+    <div class="tab-pane active" id="udp-code">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:8px">UDP Client</div>
+          <pre><span class="code-kw">from</span> socket <span class="code-kw">import</span> *
+
+serverName = <span class="code-str">'hostname'</span>
+serverPort = <span class="code-str">12000</span>
+
+<span class="code-cmt"># Create UDP socket</span>
+clientSocket = <span class="code-fn">socket</span>(
+  AF_INET, SOCK_DGRAM)
+
+msg = <span class="code-fn">input</span>(<span class="code-str">'Enter sentence:'</span>)
+
+<span class="code-cmt"># Attach destination & send</span>
+clientSocket.<span class="code-fn">sendto</span>(
+  msg.<span class="code-fn">encode</span>(),
+  (serverName, serverPort))
+
+reply, addr = clientSocket.<span class="code-fn">recvfrom</span>(<span class="code-str">2048</span>)
+<span class="code-fn">print</span>(reply.<span class="code-fn">decode</span>())
+clientSocket.<span class="code-fn">close</span>()</pre>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--accent3);margin-bottom:8px">UDP Server</div>
+          <pre><span class="code-kw">from</span> socket <span class="code-kw">import</span> *
+
+serverPort = <span class="code-str">12000</span>
+serverSocket = <span class="code-fn">socket</span>(
+  AF_INET, SOCK_DGRAM)
+
+<span class="code-cmt"># Bind to port</span>
+serverSocket.<span class="code-fn">bind</span>((<span class="code-str">''</span>, serverPort))
+<span class="code-fn">print</span>(<span class="code-str">"Ready to receive"</span>)
+
+<span class="code-kw">while</span> True:
+  msg, addr = serverSocket.<span class="code-fn">recvfrom</span>(<span class="code-str">2048</span>)
+  modified = msg.<span class="code-fn">decode</span>().<span class="code-fn">upper</span>()
+  serverSocket.<span class="code-fn">sendto</span>(
+    modified.<span class="code-fn">encode</span>(), addr)</pre>
+        </div>
+      </div>
+    </div>
+    <div class="tab-pane" id="tcp-code">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:8px">TCP Client</div>
+          <pre><span class="code-kw">from</span> socket <span class="code-kw">import</span> *
+
+serverName = <span class="code-str">'servername'</span>
+serverPort = <span class="code-str">12000</span>
+
+<span class="code-cmt"># SOCK_STREAM = TCP</span>
+clientSocket = <span class="code-fn">socket</span>(
+  AF_INET, SOCK_STREAM)
+
+<span class="code-cmt"># TCP handshake happens here!</span>
+clientSocket.<span class="code-fn">connect</span>(
+  (serverName, serverPort))
+
+msg = <span class="code-fn">input</span>(<span class="code-str">'Enter sentence:'</span>)
+clientSocket.<span class="code-fn">send</span>(msg.<span class="code-fn">encode</span>())
+
+reply = clientSocket.<span class="code-fn">recv</span>(<span class="code-str">1024</span>)
+<span class="code-fn">print</span>(reply.<span class="code-fn">decode</span>())
+clientSocket.<span class="code-fn">close</span>()</pre>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--accent3);margin-bottom:8px">TCP Server</div>
+          <pre><span class="code-kw">from</span> socket <span class="code-kw">import</span> *
+
+serverPort = <span class="code-str">12000</span>
+<span class="code-cmt"># Welcoming socket</span>
+serverSocket = <span class="code-fn">socket</span>(
+  AF_INET, SOCK_STREAM)
+serverSocket.<span class="code-fn">bind</span>((<span class="code-str">''</span>, serverPort))
+serverSocket.<span class="code-fn">listen</span>(<span class="code-str">1</span>)
+
+<span class="code-kw">while</span> True:
+  <span class="code-cmt"># New socket per client!</span>
+  connSock, addr = serverSocket.<span class="code-fn">accept</span>()
+  sentence = connSock.<span class="code-fn">recv</span>(<span class="code-str">1024</span>).<span class="code-fn">decode</span>()
+  cap = sentence.<span class="code-fn">upper</span>()
+  connSock.<span class="code-fn">send</span>(cap.<span class="code-fn">encode</span>())
+  connSock.<span class="code-fn">close</span>() <span class="code-cmt"># close this conn</span></pre>
+        </div>
+      </div>
+    </div>
+    <div class="tab-pane" id="diff-tab">
+      <table class="compare-table">
+        <tr><th>Feature</th><th>UDP</th><th>TCP</th></tr>
+        <tr><td>Connection setup</td><td class="badge-no">None</td><td class="badge-yes">3-way handshake</td></tr>
+        <tr><td>Reliability</td><td class="badge-no">Unreliable</td><td class="badge-yes">Guaranteed delivery</td></tr>
+        <tr><td>Ordering</td><td class="badge-no">Out-of-order possible</td><td class="badge-yes">In-order always</td></tr>
+        <tr><td>Speed</td><td class="badge-yes">Faster (low overhead)</td><td>Slower (overhead)</td></tr>
+        <tr><td>Socket type</td><td><code>SOCK_DGRAM</code></td><td><code>SOCK_STREAM</code></td></tr>
+        <tr><td>Address needed per packet</td><td class="badge-yes">Yes (sendto)</td><td class="badge-no">No (send)</td></tr>
+        <tr><td>Server creates new socket per client</td><td class="badge-no">No</td><td class="badge-yes">Yes (accept())</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- QUIZ -->
+<section class="section" id="quiz">
+  <div class="section-header">
+    <div class="section-num">📝</div>
+    <h2>30 Practice Questions</h2>
+  </div>
+  <div class="quiz-header">
+    <p style="color:var(--muted);font-size:14px">Test your understanding. Select an answer to see instant feedback.</p>
+    <div class="quiz-score">Score: <span id="scoreVal">0</span> / <span id="scoreTotal">30</span></div>
+  </div>
+  <div id="quizContainer"></div>
+</section>
+
+<!-- Progress bar -->
+<div class="quiz-progress" id="quizProgress" style="display:none">
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-text" id="progressText">0 / 30 answered</div>
+</div>
+
+<script>
+// ===================== QUIZ DATA =====================
+const questions = [
+  {q:"What does HTTP stand for?",a:1,opts:["HyperText Transmission Protocol","HyperText Transfer Protocol","High Transfer Text Protocol","HyperText Transport Protocol"],e:"HTTP = HyperText Transfer Protocol — the application-layer protocol that powers the Web."},
+  {q:"HTTP is described as 'stateless'. What does this mean?",a:2,opts:["It uses no states in its finite state machine","The server maintains no information about past client requests","The client forgets what server it connected to","HTTP connections never close"],e:"Stateless means the server keeps no memory of past requests — each HTTP request is independent."},
+  {q:"What transport protocol does HTTP use, and on what port?",a:0,opts:["TCP on port 80","UDP on port 80","TCP on port 443","UDP on port 25"],e:"HTTP uses TCP (reliable) on port 80. HTTPS uses port 443."},
+  {q:"What is the HTTP response time for non-persistent HTTP fetching one object?",a:3,opts:["1 RTT + file size","1 RTT","3 RTT","2 RTT + file transmission time"],e:"Non-persistent HTTP needs 1 RTT for TCP setup + 1 RTT for HTTP request/response + file transmission time = 2RTT + transmission time."},
+  {q:"In persistent HTTP (HTTP/1.1), how many RTTs are needed for subsequent objects?",a:1,opts:["2 RTT each","As little as 1 RTT each","0 RTT (pipelined)","3 RTT each"],e:"HTTP 1.1 leaves the connection open — subsequent referenced objects can be fetched with as little as 1 RTT each."},
+  {q:"Which HTTP method is used to send data to the server via the URL (query string)?",a:2,opts:["POST","PUT","GET","HEAD"],e:"GET can send data via the URL: www.site.com/search?q=hello. POST sends data in the message body."},
+  {q:"What HTTP status code means 'Object moved permanently'?",a:1,opts:["200","301","404","500"],e:"301 Moved Permanently — the server tells the client to go to a new URL (given in the Location header)."},
+  {q:"What are the four components of the cookie system?",a:0,opts:["Response header, request header, client cookie file, server database","Session ID, token, SSL cert, server log","IP address, port, MAC, domain","GET request, POST response, DNS record, TLS cert"],e:"Cookies require: (1) set-cookie in HTTP response, (2) cookie header in future requests, (3) cookie file on client, (4) back-end database on server."},
+  {q:"What is a 'socket' in networking?",a:2,opts:["A physical port on a router","An IP address and port combined","The door/API between the application layer and the transport layer","A UDP datagram packet"],e:"A socket is the software interface between the app process and the OS transport layer — like a door the process uses to send/receive data."},
+  {q:"What identifies a process on the network (beyond just the IP address)?",a:3,opts:["MAC address","Domain name","Process ID","IP address + port number"],e:"IP address identifies the host; port number identifies the specific process. Together (IP + port) uniquely identifies a process."},
+  {q:"In the client-server paradigm, which of the following is TRUE?",a:1,opts:["Clients communicate directly with each other","The server has a permanent IP address and is always on","Clients always have fixed IP addresses","There is no need for a data center"],e:"Servers are always-on, have permanent IPs, often live in data centers. Clients may be intermittent and have dynamic IPs."},
+  {q:"What is the key advantage of P2P architecture?",a:0,opts:["Self-scalability — new peers add capacity AND create demand","Simpler management than client-server","Always-on central coordination","Guaranteed reliability for all transfers"],e:"P2P is self-scalable: each new peer brings both new service capacity and new demand, so the system scales organically."},
+  {q:"What does DNS stand for and what is its main function?",a:2,opts:["Data Name System — stores user data","Dynamic Network Service — assigns IPs","Domain Name System — translates hostnames to IP addresses","Distributed Name Server — manages routing"],e:"DNS = Domain Name System. Its core job is translating human-readable hostnames (like google.com) into IP addresses."},
+  {q:"Why can't DNS be centralized?",a:3,opts:["Security requirements forbid it","Bandwidth is insufficient","Most countries ban it","It wouldn't scale: single point of failure, too much traffic, maintenance burden"],e:"A centralized DNS would be a single point of failure, have massive traffic, be geographically distant from many users, and be a maintenance nightmare — it doesn't scale."},
+  {q:"What type of DNS server is the 'contact of last resort' when no other server can resolve a name?",a:1,opts:["TLD server","Root name server","Local DNS server","Authoritative server"],e:"Root name servers are the authoritative source of last resort. There are 13 logical root servers worldwide (each replicated many times)."},
+  {q:"In an iterated DNS query, what does the contacted server return?",a:0,opts:["The name of another server to ask","The final IP address directly","An error if it doesn't know","A cached result always"],e:"In iterative mode, the contacted server says 'I don't know, but ask this server' — the burden stays on the requesting host."},
+  {q:"What is a DNS 'A' record?",a:2,opts:["An alias mapping two hostnames","A mail server entry","A hostname-to-IP-address mapping","A nameserver delegation"],e:"Type A records map a hostname directly to an IP address. e.g., www.example.com → 192.0.2.1"},
+  {q:"What is the purpose of TTL in DNS records?",a:1,opts:["To encrypt the record","To control how long the record is cached before expiring","To specify priority of the server","To limit query retries"],e:"TTL (Time-To-Live) tells caches how long to hold the record. When it expires, the cache must re-query. This balances freshness vs load."},
+  {q:"What does TCP's 'flow control' mechanism do?",a:3,opts:["Limits the number of TCP connections","Encrypts data in transit","Prioritizes certain types of traffic","Ensures the sender doesn't overwhelm the receiver's buffer"],e:"Flow control matches the sending rate to the receiver's capacity — the receiver advertises how much buffer space it has."},
+  {q:"Which transport protocol provides NO reliability, flow control, or congestion control?",a:0,opts:["UDP","TCP","TLS","FTP"],e:"UDP is intentionally bare-bones: no handshake, no guarantees. Its advantage is speed and low overhead, good for real-time apps."},
+  {q:"What is TLS and where does it sit in the stack?",a:2,opts:["A new transport protocol below TCP","A hardware encryption chip","An application-layer library that encrypts TCP connections","A DNS security extension"],e:"TLS (Transport Layer Security) is implemented in the application layer. Apps use TLS libraries which then use TCP. It provides encryption + integrity + authentication."},
+  {q:"What is the purpose of the Conditional GET mechanism?",a:1,opts:["To force a re-download of all cached objects","To avoid sending an object if the cache already has an up-to-date copy","To encrypt HTTP requests","To support multiple simultaneous connections"],e:"Conditional GET uses If-Modified-Since. If the server's copy hasn't changed, it returns '304 Not Modified' with no body — saving bandwidth."},
+  {q:"In socket programming with UDP, what extra step does the client need that TCP doesn't?",a:3,opts:["Creating a socket","Closing the socket","Binding to a port","Attaching destination IP and port to each datagram before sending"],e:"UDP is connectionless — there's no prior handshake establishing who you're talking to. You must include the destination address in EVERY sendto() call."},
+  {q:"In TCP socket programming, what does the server's accept() call return?",a:0,opts:["A NEW socket dedicated to communicating with that specific client","The client's hostname","An error code if the connection fails","The client's MAC address"],e:"accept() creates a brand-new connection socket for the specific client. The original 'welcoming socket' keeps listening for new clients — this is how one server handles many clients."},
+  {q:"What is the SOCK_DGRAM socket type used for?",a:2,opts:["TCP connections","Encrypted connections","UDP datagrams","Raw IP packets"],e:"SOCK_DGRAM creates a UDP socket. SOCK_STREAM creates a TCP socket."},
+  {q:"What is DNS caching and what problem can it cause?",a:1,opts:["It permanently stores all DNS records","Name servers temporarily store mappings to reduce load, but entries can become stale if an IP changes","It encrypts DNS responses","It speeds up DNS by centralizing all records"],e:"DNS caching reduces load on upper-level servers. The downside: if a hostname's IP changes, cached entries won't update until their TTL expires — potentially causing stale/wrong mappings."},
+  {q:"Which HTTP method would you use to check if a resource exists without downloading it?",a:3,opts:["GET","POST","PUT","HEAD"],e:"HEAD requests just the headers a GET would return — no body. Useful for checking if a resource exists or getting its size/last-modified date."},
+  {q:"What does ICANN manage?",a:0,opts:["The root DNS domain","HTTP protocol standards","All .com registrations only","Internet routing tables"],e:"ICANN (Internet Corporation for Assigned Names and Numbers) manages the root DNS domain and overall domain name policy."},
+  {q:"In a non-persistent HTTP connection downloading a page with 10 images, how many TCP connections are opened?",a:2,opts:["1 (one reused for all)","2","11 (1 for HTML + 10 for images)","10"],e:"Non-persistent HTTP = one object per TCP connection. Base HTML file = 1 connection. 10 images = 10 more connections. Total: 11."},
+  {q:"What is 'DNS poisoning'?",a:1,opts:["Overloading a DNS server with traffic","Sending bogus DNS replies to a server so it caches incorrect mappings","Intercepting all DNS queries","Deleting DNS records"],e:"DNS poisoning is a redirect attack where an attacker sends fake DNS replies to get a server to cache wrong name→IP mappings, redirecting users to malicious servers."}
+];
+
+let scores = new Array(questions.length).fill(null);
+let answered = 0;
+
+function buildQuiz() {
+  const c = document.getElementById('quizContainer');
+  questions.forEach((q, i) => {
+    const card = document.createElement('div');
+    card.className = 'question-card';
+    card.id = `qcard-${i}`;
+    card.innerHTML = `
+      <div class="q-num">Question ${i+1} of 30</div>
+      <div class="q-text">${q.q}</div>
+      <div class="q-options" id="qopts-${i}">
+        ${q.opts.map((o,j)=>`
+          <button class="q-option" id="qopt-${i}-${j}" onclick="answer(${i},${j})">
+            <span class="q-option-key">${['A','B','C','D'][j]}</span>
+            ${o}
+          </button>`).join('')}
+      </div>
+      <div class="q-feedback" id="qfb-${i}"></div>
+    `;
+    c.appendChild(card);
+  });
+  document.getElementById('quizProgress').style.display='flex';
+}
+
+function answer(qi, opt) {
+  if (scores[qi] !== null) return;
+  const correct = questions[qi].a === opt;
+  scores[qi] = correct ? 1 : 0;
+  if (scores[qi] === 1 || scores[qi] === 0) answered++;
+
+  const card = document.getElementById(`qcard-${qi}`);
+  const fb = document.getElementById(`qfb-${qi}`);
+  card.className = 'question-card ' + (correct ? 'correct' : 'wrong');
+
+  for (let j = 0; j < 4; j++) {
+    const btn = document.getElementById(`qopt-${qi}-${j}`);
+    btn.disabled = true;
+    if (j === questions[qi].a) btn.className = 'q-option reveal-correct';
+    if (j === opt && !correct) btn.className = 'q-option selected-wrong';
+    if (j === opt && correct) btn.className = 'q-option selected-correct';
+  }
+
+  fb.className = `q-feedback show ${correct?'correct':'wrong'}`;
+  fb.innerHTML = (correct ? '✅ Correct! ' : '❌ Not quite. ') + questions[qi].e;
+
+  const total = scores.filter(s => s===1).length;
+  document.getElementById('scoreVal').textContent = total;
+  const pct = Math.round(answered/30*100);
+  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('progressText').textContent = `${answered} / 30 answered`;
+}
+
+// ===================== HTTP FLOW SIMULATOR =====================
+const flowMessages = [
+  {status:"Step 1: Client initiates TCP connection to server (port 80). Sending SYN packet...", client:true},
+  {status:"Step 2: Server accepts TCP connection, sends SYN-ACK back to client.", server:true},
+  {status:"Step 3: Client sends ACK + HTTP GET request. Connection established! That's 1 RTT so far.", client:true},
+  {status:"Step 4: Server processes request, forms response with requested object, sends HTTP 200 OK + data. That's 2 RTTs + transmission time!", server:true},
+  {status:"Step 5: Connection closed (non-persistent). For 10 images, steps 1-4 repeat 10 more times!", server:true}
+];
+let flowStep = 0;
+
+function nextFlowStep() {
+  if (flowStep >= flowMessages.length) return;
+  const step = document.getElementById(`step${flowStep}`);
+  if (step) {
+    for (let i=0;i<flowStep;i++) {
+      const s = document.getElementById(`step${i}`);
+      if(s){s.classList.remove('active');s.classList.add('done');}
+    }
+    step.classList.add('active');
+  }
+  const msg = flowMessages[flowStep];
+  document.getElementById('flowStatus').textContent = msg.status;
+  if (msg.client) {
+    document.getElementById('client-box').classList.add('highlight');
+    document.getElementById('server-box').classList.remove('highlight');
+  } else {
+    document.getElementById('server-box').classList.add('highlight');
+    document.getElementById('client-box').classList.remove('highlight');
+  }
+  flowStep++;
+}
+
+function resetFlow() {
+  flowStep = 0;
+  for (let i=0;i<5;i++) {
+    const s = document.getElementById(`step${i}`);
+    if(s){s.classList.remove('active','done');}
+  }
+  document.getElementById('flowStatus').textContent = 'Press "Next Step" to begin the HTTP simulation...';
+  document.getElementById('client-box').classList.remove('highlight');
+  document.getElementById('server-box').classList.remove('highlight');
+}
+
+// ===================== RTT ANIMATOR =====================
+function animateRTT() {
+  const r1 = document.getElementById('rtt1');
+  const r2 = document.getElementById('rtt2');
+  const r3 = document.getElementById('rtt3');
+  const total = document.getElementById('rttTotal');
+  r1.style.width='0'; r2.style.width='0'; r3.style.width='0'; total.style.opacity='0';
+  setTimeout(()=>{r1.style.width='35%'},100);
+  setTimeout(()=>{r2.style.width='35%'},1200);
+  setTimeout(()=>{r3.style.width='55%'},2400);
+  setTimeout(()=>{total.style.opacity='1'},3600);
+}
+
+// ===================== PROTOCOL TOGGLE =====================
+function switchProto(p) {
+  document.querySelectorAll('.ptog-btn').forEach((b,i)=>{
+    b.classList.toggle('active', (i===0&&p==='tcp')||(i===1&&p==='udp'));
+  });
+  document.getElementById('proto-tcp').className = 'protocol-detail'+(p==='tcp'?' show':'');
+  document.getElementById('proto-udp').className = 'protocol-detail'+(p==='udp'?' show':'');
+}
+
+// ===================== TABS =====================
+function switchTab(id, containerId) {
+  const container = document.getElementById(containerId);
+  container.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  container.previousElementSibling.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ===================== DNS INFO =====================
+const dnsInfo = {
+  root: {title:"Root DNS Servers", text:"There are 13 logical root name servers worldwide, each replicated many times (~200+ physical servers). Managed by ICANN, they are the 'contact of last resort' for any unresolved name. DNS would not function without them."},
+  com: {title:".com TLD Server", text:"Top-Level Domain servers handle .com, .net and similar extensions. Network Solutions is the authoritative registry for .com and .net. When you query any .com domain, this server tells you which authoritative server to ask."},
+  org: {title:".org TLD Server", text:"Handles all .org domains. Like .com, it directs queries to the correct authoritative name server for each organization under .org."},
+  edu: {title:".edu TLD Server", text:"Handles .edu domains. Managed by Educause. All US university domains (harvard.edu, mit.edu, umass.edu) are under this TLD."},
+  jm: {title:"Country TLD Servers (.jm .tt .uk)", text:"Country-code TLDs (ccTLDs) like .jm (Jamaica), .tt (Trinidad), .uk (UK) handle all domains for their respective countries. Each country manages its own TLD."},
+  amazon: {title:"amazon.com Authoritative DNS", text:"Amazon's own DNS server that stores the definitive hostname→IP mappings for all amazon.com hosts. It's the final authority — its answer is canonical and trusted."},
+  umass: {title:"umass.edu Authoritative DNS", text:"The University of Massachusetts's own DNS server. If you query gaia.cs.umass.edu, this server gives the final answer (the actual IP address)."},
+  nyu: {title:"nyu.edu Authoritative DNS", text:"New York University's authoritative DNS. Handles all resolution for *.nyu.edu hosts including engineering.nyu.edu."}
+};
+
+function showDnsInfo(key) {
+  const box = document.getElementById('dnsInfoBox');
+  const info = dnsInfo[key];
+  box.innerHTML = `<strong style="color:var(--accent)">${info.title}</strong><br>${info.text}`;
+  box.className = 'dns-info-box show';
+  document.querySelectorAll('.dns-node').forEach(n=>n.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+// ===================== DNS SIMULATOR =====================
+const dnsSteps = [
+  {servers:['dns-client'], log:"[→] Your host queries local DNS server (dns.nyu.edu): 'What is the IP for www.amazon.com?'", type:'q'},
+  {servers:['dns-local'], log:"[→] Local DNS queries Root DNS Server: 'Who handles .com?'", type:'q'},
+  {servers:['dns-root'], log:"[←] Root DNS replies: 'I don't know, but ask the .com TLD server at 192.5.6.30'", type:'r'},
+  {servers:['dns-local'], log:"[→] Local DNS queries .com TLD server: 'Who handles amazon.com?'", type:'q'},
+  {servers:['dns-tld'], log:"[←] TLD replies: 'I don't know the IP, but ask dns.amazon.com'", type:'r'},
+  {servers:['dns-local'], log:"[→] Local DNS queries Amazon's authoritative server (dns.amazon.com): 'IP for www.amazon.com?'", type:'q'},
+  {servers:['dns-auth'], log:"[←] Authoritative DNS replies: 'www.amazon.com = 205.251.242.103'", type:'r'},
+  {servers:['dns-local','dns-client'], log:"[←] Local DNS caches the result and sends IP back to your host. ✅ Done! www.amazon.com = 205.251.242.103", type:'r'}
+];
+let dnsStep = 0;
+
+function nextDNSStep() {
+  if (dnsStep >= dnsSteps.length) return;
+  const step = dnsSteps[dnsStep];
+  document.querySelectorAll('.dns-server-box').forEach(b=>{b.className='dns-server-box';});
+  step.servers.forEach(id=>{
+    document.getElementById(id).classList.add(step.type==='q'?'querying':'answered');
+  });
+  const log = document.getElementById('dnsLog');
+  const entry = document.createElement('div');
+  entry.className = `dns-log-entry ${step.type==='r'?'res':''}`;
+  entry.textContent = `Step ${dnsStep+1}: ${step.log}`;
+  log.appendChild(entry);
+  log.scrollTop = log.scrollHeight;
+  dnsStep++;
+}
+
+function resetDNS() {
+  dnsStep = 0;
+  document.querySelectorAll('.dns-server-box').forEach(b=>{b.className='dns-server-box';});
+  document.getElementById('dnsLog').innerHTML = 'Ready to simulate DNS lookup for www.amazon.com...<br>';
+}
+
+// ===================== COOKIES =====================
+const cookieDetails = [
+  "When you first visit amazon.com, the server creates a unique ID (e.g., 1678) and sends it in the HTTP response header: <code>Set-Cookie: 1678</code>. Your browser saves this.",
+  "On every subsequent request to amazon.com, your browser automatically adds the header: <code>Cookie: 1678</code>. The server reads this and knows it's you.",
+  "Your browser maintains a local cookie file (e.g., in your browser's app data folder) that stores cookie values per domain. It manages expiration dates too.",
+  "The server's database stores what's linked to ID 1678: your cart, wishlist, recommendations, login session, etc. The cookie is just the key — the data lives server-side."
+];
+
+function selectCookie(i) {
+  document.querySelectorAll('.cookie-step').forEach((s,j)=>s.classList.toggle('selected',i===j));
+  const d = document.getElementById('cookieDetail');
+  d.innerHTML = cookieDetails[i];
+  d.style.display = 'block';
+}
+
+// ===================== SCROLL SPY & FADE =====================
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, {threshold:0.1});
+document.querySelectorAll('.fade-in').forEach(el=>observer.observe(el));
+
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('nav a');
+window.addEventListener('scroll', () => {
+  let cur = '';
+  sections.forEach(s => { if(window.scrollY >= s.offsetTop - 100) cur = s.id; });
+  navLinks.forEach(a => { a.classList.toggle('active', a.getAttribute('href') === '#'+cur); });
+});
+
+// Init
+buildQuiz();
+document.getElementById('scoreTotal').textContent = questions.length;
+</script>
+</body>
+</html>
